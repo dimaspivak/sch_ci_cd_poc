@@ -1,7 +1,9 @@
 import logging
 import string
+import time
 
 import sqlalchemy
+from elasticsearch_dsl import Index
 from streamsets.testframework.utils import get_random_string
 
 logger = logging.getLogger(__name__)
@@ -65,9 +67,18 @@ def test_simple(sch, pipeline, database, elasticsearch):
                                 runtime_parameters=runtime_parameters)
         job.description = 'CI test job'
         sch.add_job(job)
-        sch.start_job(job, wait_for_data_collectors=True)
+        sch.start_job(job)
+
+        # Wait for records to be written.
+        time.sleep(10)
 
         data_in_elastic = [hit.to_dict() for hit in elasticsearch.search(index=index).sort('rank').execute()]
         assert EXPECTED_RESULTS == data_in_elastic
-    except:
-        raise
+    finally:
+        sch.stop_job(job)
+
+        logger.info('Deleting Elasticsearch index %s ...', index)
+        Index(index, using=elasticsearch.client).delete()
+
+        logger.info('Dropping table %s ...', table_name)
+        table.drop(database.engine)
