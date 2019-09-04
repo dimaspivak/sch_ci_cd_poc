@@ -12,15 +12,14 @@ def pytest_addoption(parser):
 @pytest.fixture(scope='session')
 def pipeline(sch, request):
     pipeline_ = sch.pipelines.get(pipeline_id=request.config.getoption('pipeline_id'))
-    yield pipeline_
-    if not request.session.testsfailed:
-        jobs_to_delete = sch.jobs.get_all(pipeline_id=pipeline_.pipeline_id, description='CI test job')
-        if jobs_to_delete:
-            logger.debug('Deleting test jobs: %s ...', ', '.join(str(job) for job in jobs_to_delete))
-            sch.delete_job(*jobs_to_delete)
-        else:
-            logger.warning('No jobs need to be deleted')
 
+    yield pipeline_
+
+    jobs_to_delete = sch.jobs.get_all(pipeline_id=pipeline_.pipeline_id, description='CI test job')
+    if jobs_to_delete:
+        logger.debug('Deleting test jobs: %s ...', ', '.join(str(job) for job in jobs_to_delete))
+        sch.delete_job(*jobs_to_delete)
+    if not request.session.testsfailed:
         if request.config.getoption('upgrade_jobs'):
             jobs_to_upgrade = sch.jobs.get_all(pipeline_id=pipeline_.pipeline_id)
             if jobs_to_upgrade:
