@@ -2,6 +2,7 @@ import logging
 import string
 import time
 
+import pytest
 import sqlalchemy
 from elasticsearch_dsl import Index
 from streamsets.testframework.utils import get_random_string
@@ -9,8 +10,30 @@ from streamsets.testframework.utils import get_random_string
 logger = logging.getLogger(__name__)
 
 
-def test_simple(sch, pipeline, database, elasticsearch):
-    """Smoke test for the tdf_data_to_elasticsearch pipeline.
+def test_complete(elasticsearch_data):
+    """Smoke test for the tdf_data_to_elasticsearch pipeline."""
+    # Data in Elasticsearch should be identical except that the "name" field should be split and prettified.
+    EXPECTED_RECORDS = [dict(year=1903, rank=1, firstName='Maurice', lastName='Garin', number=1, team='TDF 1903',
+                             time='94h 33m 14s', hours=94, mins=33, secs=14),
+                        dict(year=1903, rank=2, firstName='Lucien', lastName='Pothier', number=37, team='TDF 1903',
+                             time='97h 32m 35s', hours=97, mins=32, secs=35),
+                        dict(year=1903, rank=3, firstName='Fernand', lastName='Augereau', number=39, team='TDF 1903',
+                             time='99h 02m 38s', hours=99, mins=2, secs=38)]
+    assert EXPECTED_RECORDS == elasticsearch_data
+
+
+def test_name_split_properly(elasticsearch_data):
+    """Test that first name and last name are split as expected."""
+    EXPECTED_NAMES = [dict(firstName='Maurice', lastName='Garin'),
+                      dict(firstName='Lucien', lastName='Pothier'),
+                      dict(firstName='Fernand', lastName='Augereau')]
+    assert EXPECTED_NAMES == [{key: record[key] for key in ['firstName', 'lastName']}
+                              for record in elasticsearch_data]
+
+
+@pytest.fixture(scope='module')
+def elasticsearch_data(sch, pipeline, database, elasticsearch):
+    """Carry out test job actions and yield the data in the test Elasticsearch environment.
 
     1. Create table and load sample data into database.
     2. Create and run job using pipeline.
@@ -25,13 +48,6 @@ def test_simple(sch, pipeline, database, elasticsearch):
                         time='97h 32m 35s', hours=97, mins=32, secs=35),
                    dict(year=1903, rank=3, name='FERNAND AUGEREAU', number=39, team='TDF 1903',
                         time='99h 02m 38s', hours=99, mins=2, secs=38)]
-    # Data in Elasticsearch should be identical except that the "name" field should be split and prettified.
-    EXPECTED_RESULTS = [dict(year=1903, rank=1, firstName='Maurice', lastName='Garin', number=1, team='TDF 1903',
-                             time='94h 33m 14s', hours=94, mins=33, secs=14),
-                        dict(year=1903, rank=2, firstName='Lucien', lastName='Pothier', number=37, team='TDF 1903',
-                             time='97h 32m 35s', hours=97, mins=32, secs=35),
-                        dict(year=1903, rank=3, firstName='Fernand', lastName='Augereau', number=39, team='TDF 1903',
-                             time='99h 02m 38s', hours=99, mins=2, secs=38)]
 
     table = sqlalchemy.Table(table_name,
                              sqlalchemy.MetaData(),
@@ -73,8 +89,8 @@ def test_simple(sch, pipeline, database, elasticsearch):
         # Wait for records to be written.
         time.sleep(10)
 
-        data_in_elastic = [hit.to_dict() for hit in elasticsearch.search(index=index).sort('rank').execute()]
-        assert EXPECTED_RESULTS == data_in_elastic
+        data_in_elasticsearch = [hit.to_dict() for hit in elasticsearch.search(index=index).sort('rank').execute()]
+        yield data_in_elasticsearch
     finally:
         sch.stop_job(job)
 
@@ -83,3 +99,4 @@ def test_simple(sch, pipeline, database, elasticsearch):
 
         logger.info('Dropping table %s ...', table_name)
         table.drop(database.engine)
+
