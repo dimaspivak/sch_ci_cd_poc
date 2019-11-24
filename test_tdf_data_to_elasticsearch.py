@@ -65,7 +65,8 @@ def test_simple(sch, pipeline, database, elasticsearch):
         job = job_builder.build('Test job for tdf_data_to_elasticsearch pipeline',
                                 pipeline=pipeline,
                                 runtime_parameters=runtime_parameters)
-        job.description = 'CI test job'
+        job.description = 'CI/CD test job'
+        job.data_collector_labels = ['test']
         sch.add_job(job)
         sch.start_job(job)
 
