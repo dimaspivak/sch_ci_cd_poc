@@ -22,7 +22,12 @@ def test_complete(elasticsearch_data):
     assert EXPECTED_RECORDS == elasticsearch_data
 
 
-def test_name_split_properly(elasticsearch_data):
+def test_remove_id_field(elasticsearch_data):
+    """Test to assert that ID was removed."""
+    assert all('id' not in record for record in elasticsearch_data)
+
+
+def test_split_name(elasticsearch_data):
     """Test that first name and last name are split as expected."""
     EXPECTED_NAMES = [dict(firstName='Maurice', lastName='Garin'),
                       dict(firstName='Lucien', lastName='Pothier'),
