@@ -15,7 +15,7 @@ def pipeline(sch, request):
 
     yield pipeline_
 
-    jobs_to_delete = sch.jobs.get_all(pipeline_id=pipeline_.pipeline_id, description='CI test job')
+    jobs_to_delete = sch.jobs.get_all(pipeline_id=pipeline_.pipeline_id, description='CI/CD test job')
     if jobs_to_delete:
         logger.debug('Deleting test jobs: %s ...', ', '.join(str(job) for job in jobs_to_delete))
         sch.delete_job(*jobs_to_delete)
