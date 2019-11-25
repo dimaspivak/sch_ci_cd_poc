@@ -9,6 +9,13 @@ from streamsets.testframework.utils import get_random_string
 
 logger = logging.getLogger(__name__)
 
+SAMPLE_DATA = [dict(year=1903, rank=1, name='MAURICE GARIN', number=1, team='TDF 1903',
+                    time='94h 33m 14s', hours=94, mins=33, secs=14),
+               dict(year=1903, rank=2, name='LUCIEN POTHIER', number=37, team='TDF 1903',
+                    time='97h 32m 35s', hours=97, mins=32, secs=35),
+               dict(year=1903, rank=3, name='FERNAND AUGEREAU', number=39, team='TDF 1903',
+                    time='99h 02m 38s', hours=99, mins=2, secs=38)]
+
 
 def test_complete(elasticsearch_data):
     """Smoke test for the tdf_data_to_elasticsearch pipeline."""
@@ -46,13 +53,6 @@ def elasticsearch_data(sch, pipeline, database, elasticsearch):
     """
     table_name = get_random_string()
     index = get_random_string(string.ascii_lowercase)
-
-    SAMPLE_DATA = [dict(year=1903, rank=1, name='MAURICE GARIN', number=1, team='TDF 1903',
-                        time='94h 33m 14s', hours=94, mins=33, secs=14),
-                   dict(year=1903, rank=2, name='LUCIEN POTHIER', number=37, team='TDF 1903',
-                        time='97h 32m 35s', hours=97, mins=32, secs=35),
-                   dict(year=1903, rank=3, name='FERNAND AUGEREAU', number=39, team='TDF 1903',
-                        time='99h 02m 38s', hours=99, mins=2, secs=38)]
 
     table = sqlalchemy.Table(table_name,
                              sqlalchemy.MetaData(),
