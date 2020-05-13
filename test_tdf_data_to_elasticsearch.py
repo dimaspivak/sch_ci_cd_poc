@@ -87,7 +87,7 @@ def elasticsearch_data(sch, pipeline, database, elasticsearch):
                                 pipeline=pipeline,
                                 runtime_parameters=runtime_parameters)
         job.description = 'CI/CD test job'
-        job.data_collector_labels = ['test']
+        job.data_collector_labels = ['CI/CD Test']
         sch.add_job(job)
         sch.start_job(job)
 
