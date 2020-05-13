@@ -9,6 +9,12 @@ def pytest_addoption(parser):
     parser.addoption('--pipeline-id')
     parser.addoption('--upgrade-jobs', action='store_true')
 
+
+@pytest.fixture(scope='session')
+def sch(sch_session):
+    yield sch_session
+
+
 @pytest.fixture(scope='session')
 def pipeline(sch, request):
     pipeline_id = request.config.getoption('pipeline_id')
