@@ -17,7 +17,7 @@ Test if a newer version of a pipeline, breaks the functioning.
 
 If it does not, upgrade any StreamSets Control Hub Job which runs that pipeline with the latest version. In essence, deploy it.
 
-If it breaks, do not upgrade the job and hence avoid data loss and headache ina all aspects. In essence, do not deploy it.
+If it breaks, do not upgrade the job and hence avoid data loss or daata corruption and headache in all aspects. In essence, do not deploy it.
 
 # Overview
 The following is a workflow that happens with code in this repo:
