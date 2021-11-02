@@ -94,13 +94,13 @@ def elasticsearch_data(sch, pipeline, database, elasticsearch):
         # Wait for records to be written.
         time.sleep(10)
 
-        data_in_elasticsearch = [hit.to_dict() for hit in elasticsearch.search(index=index).sort('rank').execute()]
+        data_in_elasticsearch = [hit['_source'] for hit in elasticsearch.client.search(index=index)]
         yield data_in_elasticsearch
     finally:
         sch.stop_job(job)
 
         logger.info('Deleting Elasticsearch index %s ...', index)
-        Index(index, using=elasticsearch.client).delete()
+        elasticsearch.client.delete_index(index)
 
         logger.info('Dropping table %s ...', table_name)
         table.drop(database.engine)
